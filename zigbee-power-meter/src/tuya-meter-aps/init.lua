@@ -125,17 +125,62 @@ local do_configure = function(self, device)
 
   --device:configure()
 end
+local function tuya_handler_energy_fwd_A(self, device, zb_rx)
+ local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
+  print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
 
+  if device.preferences.logDebugPrint == true then
+    print("<<<<<<<<<<<<<<< energy-offset", energy)
+  end
+  device.profile.components["main3"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+end
+local function tuya_handler_energy_fwd_B(self, device, zb_rx)
+ local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
+  print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
+
+  if device.preferences.logDebugPrint == true then
+    print("<<<<<<<<<<<<<<< energy-offset", energy)
+  end
+  device.profile.components["main4"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+end
+local function tuya_handler_energy_rev_A(self, device, zb_rx)
+ local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
+  print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
+
+  if device.preferences.logDebugPrint == true then
+    print("<<<<<<<<<<<<<<< energy-offset", energy)
+  end
+  device.profile.components["main5"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+end
+local function tuya_handler_energy_rev_B(self, device, zb_rx)
+ local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
+  print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
+
+  if device.preferences.logDebugPrint == true then
+    print("<<<<<<<<<<<<<<< energy-offset", energy)
+  end
+  device.profile.components["main6"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+end
+
+local function tuya_handler_power_total(self, device, zb_rx)
+ local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  print("<<<<<<<<<<<<<<< tuya_handler_power", power)
+
+  if device.preferences.logDebugPrint == true then
+    print("<<<<<<<<<<<<<<< power-offset", power)
+  end
+  device.profile.components["summary"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+end
 local function tuya_handler_energy_A(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
 
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
   device.profile.components["main"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
-  device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = -energy, unit = "kWh" }))
+  
 end
 local function tuya_handler_power_A(self, device, zb_rx)
  local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
@@ -149,7 +194,7 @@ end
 
 local function tuya_handler_current_A(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_current", current)
 
   if device.preferences.logDebugPrint == true then
@@ -159,7 +204,7 @@ local function tuya_handler_current_A(self, device, zb_rx)
 end
 local function tuya_handler_energy_B(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
 
   if device.preferences.logDebugPrint == true then
@@ -180,7 +225,7 @@ end
 
 local function tuya_handler_current_B(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_current", current)
 
   if device.preferences.logDebugPrint == true then
@@ -212,7 +257,7 @@ end
 
 local function tuya_handler_voltage(self, device, zb_rx)
   -- DP  (0x71) Voltage -- byte 7, len 4 and divided by 100 for real value in kwh
-  local voltage = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+  local voltage = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_energy", voltage)
 
 
@@ -244,22 +289,31 @@ end
 -- Tuya report handler
 local function tuya_handler(self, device, zb_rx)
   print("<<<< Tuya handler >>>>")
-
 local dp_table = {
-
-	 -- Clamp A (Outbuilding)
-    [0x65] = tuya_handler_current_A,     -- Current Clamp A
-    [0x70] = tuya_handler_power_A,       -- Power Clamp A  
-    [0x6F] = tuya_handler_energy_A,      -- Energy Clamp A
+    -- Core Power Measurements
+    [0x73] = tuya_handler_power_total,    -- DP 115: Total Power (A+B), signed, 0.1W
+    [0x65] = tuya_handler_power_A,        -- DP 101: Power A, unsigned, 0.1W
+    [0x69] = tuya_handler_power_B,        -- DP 105: Power B, unsigned, 0.1W
     
-    -- Clamp B (Grid) - Need to identify these
-    [0x69] = tuya_handler_current_B,     -- Current Clamp B?
-    [0x72] = tuya_handler_power_B,       -- Power Clamp B?
-    [0x73] = tuya_handler_energy_B,      -- Energy Clamp B?
+    -- Power Direction
+    -- [0x66] = tuya_handler_direction_A,    -- DP 102: Direction A (0=Forward, 1=Reverse)
+    -- [0x68] = tuya_handler_direction_B,    -- DP 104: Direction B (0=Forward, 1=Reverse) ⚠️ MISSING
     
-    -- Other
-    [0x71] = tuya_handler_voltage,       -- Voltage (shared)
-    [0x66] = tuya_handler_switch,        -- Switch state
+    -- Energy Measurements (Forward/Reverse)
+    [0x6A] = tuya_handler_energy_fwd_A,   -- DP 106: Forward Energy A, 0.01kWh ⚠️ MISSING
+    [0x6B] = tuya_handler_energy_rev_A,   -- DP 107: Reverse Energy A, 0.01kWh ⚠️ MISSING  
+    [0x6C] = tuya_handler_energy_fwd_B,   -- DP 108: Forward Energy B, 0.01kWh ⚠️ MISSING
+    [0x6D] = tuya_handler_energy_rev_B,   -- DP 109: Reverse Energy B, 0.01kWh ⚠️ MISSING
+    
+    -- Power Factor
+    -- [0x6E] = tuya_handler_power_factor_A, -- DP 110: Power Factor A, x100 ⚠️ MISSING
+    -- [0x79] = tuya_handler_power_factor_B, -- DP 121: Power Factor B, x100 ⚠️ MISSING
+    
+    -- Basic Electrical Measurements  
+    -- [0x6F] = tuya_handler_frequency,      -- DP 111: AC Frequency, x100
+    [0x70] = tuya_handler_voltage,        -- DP 112: Voltage A, x100
+    [0x71] = tuya_handler_current_A,      -- DP 113: Current A, x100
+    [0x72] = tuya_handler_current_B,      -- DP 114: Current B, x100
 }
 
   -- cluster: 0xEF00 in this device:

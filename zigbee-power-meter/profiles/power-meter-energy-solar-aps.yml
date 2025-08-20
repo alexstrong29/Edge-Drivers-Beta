@@ -1,5 +1,10 @@
 name: power-meter-energy-solar-aps
 components:
+- id: summary
+  label: Summary
+  capabilities:
+  - id: powerMeter
+    version: 1
 - id: main
   label: Clamp A (Outbuilding)
   capabilities:
@@ -31,6 +36,34 @@ components:
   - id: firmwareUpdate
     version: 1
   - id: refresh
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: main3
+  label: Clamp A Forward
+  capabilities:
+  - id: energyMeter
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: main4
+  label: Clamp A Reverse
+  capabilities:
+  - id: energyMeter
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: main5
+  label: Clamp B (Grid) Forward
+  capabilities:
+  - id: energyMeter
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: main6
+  label: Clamp B (Grid) Reverse
+  capabilities:
+  - id: energyMeter
     version: 1
   categories:
   - name: CurbPowerMeter
