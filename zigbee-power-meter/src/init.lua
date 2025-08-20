@@ -112,7 +112,8 @@ local zigbee_power_meter_driver_template = {
     require("ezex"),
     require("frient"),
     require("shinasystems"),
-    require("tuya-meter")
+    require("tuya-meter"),
+	require("tuya-meter-aps")
   },
   lifecycle_handlers = {
     init = device_init,

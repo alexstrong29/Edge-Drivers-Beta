@@ -38,12 +38,12 @@ zigbeeManufacturer:
     deviceLabel: Energy Monitor Dual Bi-directional PC311-Z-TY
     manufacturer: _TZE200_rks0sgb7
     model: TS0601
-    deviceProfileName: power-meter-energy-solar-dual-exp-prod
-  - id: "Legrand/Smart_module"
-    deviceLabel: BTicino FC80GCS
-    manufacturer: Legrand
-    model: Smart shedder module
-    deviceProfileName: power-meter-no-energy
+    deviceProfileName: power-meter-energy-solar
+  - id: "_TZE284_81yrt3lo/TS0601"
+    deviceLabel: Energy Monitor Zigbee APS
+    manufacturer: _TZE284_81yrt3lo
+    model: TS0601
+    deviceProfileName: power-meter-energy-solar-aps
 zigbeeGeneric:
   - id: "genericMeter"
     deviceLabel: Zigbee Meter
@@ -56,7 +56,7 @@ zigbeeGeneric:
     clusters:
       server:
         - 0x0B04 #Electric metering
-    deviceProfileName: power-meter-no-energy
+    deviceProfileName: power-energy-meter
   - id: "genericMeter-2"
     deviceLabel: Zigbee Meter
     clusters:

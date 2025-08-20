@@ -1,4 +1,4 @@
-name: 'Zigbee Power/Meter Mc'
+name: 'Zigbee Power/Meter Mc APS'
 packageKey: 'zigbee-power-meter'
 description: 'Devices supported: https://github.com/Mariano-Github/Edge-Drivers-Beta/blob/main/zigbee-power-meter/fingerprints.yml'
 permissions:
