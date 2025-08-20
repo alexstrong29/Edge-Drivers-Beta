@@ -128,7 +128,7 @@ end
 
 local function tuya_handler_energy_A(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7) /100
+  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
 
   if device.preferences.logDebugPrint == true then
@@ -159,14 +159,14 @@ local function tuya_handler_current_A(self, device, zb_rx)
 end
 local function tuya_handler_energy_B(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7) /100
+  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
 
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
-  device.profile.components["main"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
-  device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = -energy, unit = "kWh" }))
+ 
+  device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
 end
 local function tuya_handler_power_B(self, device, zb_rx)
  local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
@@ -175,7 +175,7 @@ local function tuya_handler_power_B(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< power-offset", power)
   end
-  device.profile.components["main"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+  device.profile.components["main2"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
 end
 
 local function tuya_handler_current_B(self, device, zb_rx)
@@ -186,7 +186,7 @@ local function tuya_handler_current_B(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< current-offset", current)
   end
-  device.profile.components["main"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
+  device.profile.components["main2"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
 end
 local function tuya_handler_power_direction(self, device, zb_rx)
   -- DP 102 (0x66) GenericBody byte 7 is value current direction (0 or 1)

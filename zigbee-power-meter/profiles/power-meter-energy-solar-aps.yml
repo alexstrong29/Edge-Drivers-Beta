@@ -1,7 +1,7 @@
 name: power-meter-energy-solar-aps
 components:
 - id: main
-  label: Solar Energy Exported
+  label: Clamp A (Outbuilding)
   capabilities:
   - id: powerMeter
     version: 1
@@ -18,7 +18,7 @@ components:
   categories:
   - name: CurbPowerMeter
 - id: main2
-  label: Grid Energy Imported
+  label: Clamp B (Grid)
   capabilities:
   - id: powerMeter
     version: 1
