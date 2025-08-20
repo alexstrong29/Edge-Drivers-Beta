@@ -194,7 +194,7 @@ end
 
 local function tuya_handler_current_A(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
+  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_current", current)
 
   if device.preferences.logDebugPrint == true then
@@ -225,7 +225,7 @@ end
 
 local function tuya_handler_current_B(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
-  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
+  local current = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_current", current)
 
   if device.preferences.logDebugPrint == true then
