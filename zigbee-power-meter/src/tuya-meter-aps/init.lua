@@ -125,6 +125,26 @@ local do_configure = function(self, device)
 
   --device:configure()
 end
+local function tuya_handler_direction_A(self, device, zb_rx)
+   local direction = string.unpack(">I1", zb_rx.body.zcl_body.body_bytes, 7)  -- Should be 1-byte: 0=Forward, 1=Reverse
+    
+    -- Option 2: Use contactSensor (Forward=Closed, Reverse=Open)
+     if direction == 0 then
+        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
+     else
+        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
+     end
+end
+
+local function tuya_handler_direction_B(self, device, zb_rx)
+    local direction = string.unpack(">I1", zb_rx.body.zcl_body.body_bytes, 7)
+    if direction == 0 then
+        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
+     else
+        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
+    end
+end
+
 local function tuya_handler_energy_fwd_A(self, device, zb_rx)
  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
@@ -183,7 +203,7 @@ local function tuya_handler_energy_A(self, device, zb_rx)
   
 end
 local function tuya_handler_power_A(self, device, zb_rx)
- local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+ local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_power", power)
 
   if device.preferences.logDebugPrint == true then
@@ -214,7 +234,7 @@ local function tuya_handler_energy_B(self, device, zb_rx)
   device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
 end
 local function tuya_handler_power_B(self, device, zb_rx)
- local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+ local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_power", power)
 
   if device.preferences.logDebugPrint == true then
@@ -296,8 +316,8 @@ local dp_table = {
     [0x69] = tuya_handler_power_B,        -- DP 105: Power B, unsigned, 0.1W
     
     -- Power Direction
-    -- [0x66] = tuya_handler_direction_A,    -- DP 102: Direction A (0=Forward, 1=Reverse)
-    -- [0x68] = tuya_handler_direction_B,    -- DP 104: Direction B (0=Forward, 1=Reverse) ⚠️ MISSING
+    [0x66] = tuya_handler_direction_A,    -- DP 102: Direction A (0=Forward, 1=Reverse)
+    [0x68] = tuya_handler_direction_B,    -- DP 104: Direction B (0=Forward, 1=Reverse) ⚠️ MISSING
     
     -- Energy Measurements (Forward/Reverse)
     [0x6A] = tuya_handler_energy_fwd_A,   -- DP 106: Forward Energy A, 0.01kWh ⚠️ MISSING

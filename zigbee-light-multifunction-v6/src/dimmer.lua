@@ -1801,10 +1801,14 @@ function driver_handler.on_handler (driver, device, command, group)
         onTimer[device] = 1
       else
         onTimer[device] = math.abs(device.preferences.onTimeMax * 60 / diff_level)
-        if onTimer[device] < 0.3 then onTimer[device] = 0.3 end
+        if onTimer[device] < 0.1 then onTimer[device] = 0.1 end
       end
       onTotalSteps[device] = math.floor(device.preferences.onTimeMax * 60 / onTimer[device])
       onStepLevel[device] = ((device.preferences.onLevelEnd - onStartDim[device])+ 0.1) / onTotalSteps[device]
+
+		-- APS Tweak to increase steps for smoothing
+	  onTotalSteps[device] = onTotalSteps[device] * 3
+	  onStepLevel[device] = onStepLevel[device] / 3
 
       if device.preferences.logDebugPrint == true then
         print("<< onTimer =",onTimer[device])
@@ -2133,7 +2137,7 @@ function driver_handler.off_handler (driver, device, command)
             offTimer[device] = 1
         else
             offTimer[device] = math.abs(device.preferences.offTimeMax * 60 / diff_level)
-            if offTimer[device] < 0.3 then offTimer[device] = 0.3 end
+            if offTimer[device] < 0.1 then offTimer[device] = 0.1 end
         end
         offTotalSteps[device] = math.floor(device.preferences.offTimeMax * 60 / offTimer[device])
         offStepLevel[device] = ((offLevelStart[device]+ 0.1) - device.preferences.offLevelEnd) / offTotalSteps[device]

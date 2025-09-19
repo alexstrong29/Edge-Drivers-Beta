@@ -8,6 +8,8 @@ components:
 - id: main
   label: Clamp A (Outbuilding)
   capabilities:
+  - id: contactSensor
+    version: 1
   - id: powerMeter
     version: 1
   - id: energyMeter
@@ -25,6 +27,8 @@ components:
 - id: main2
   label: Clamp B (Grid)
   capabilities:
+  - id: contactSensor
+    version: 1
   - id: powerMeter
     version: 1
   - id: energyMeter
