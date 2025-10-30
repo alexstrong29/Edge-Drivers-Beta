@@ -1,4 +1,4 @@
-name: 'Zigbee Light Multifunction Mc'
+name: 'Zigbee Light Multifunction APS'
 packageKey: 'Zigbee_Light_Multifunction_v6.2'
 description: 'Devices Supported: https://github.com/Mariano-Github/Edge-Drivers-Beta/blob/main/zigbee-light-multifunction-v6/fingerprints.yml'
 permissions:
