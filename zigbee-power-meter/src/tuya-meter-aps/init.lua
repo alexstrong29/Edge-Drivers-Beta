@@ -91,13 +91,13 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
 end
 
 local function device_added(self, device)
-  local _, cap_status = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+  local _, cap_status = device:get_latest_state("main2", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
   if cap_status == nil then
     device:emit_event(capabilities.energyMeter.energy({value = 0, unit = "kWh" }))
   end
-  local _, cap_status = device:get_latest_state("main2", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+  local _, cap_status = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
   if cap_status == nil then
-    device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = 0, unit = "kWh" }))
+    device.profile.components["main"]:emit_event(capabilities.energyMeter.energy({value = 0, unit = "kWh" }))
   end
 end
 
@@ -130,18 +130,18 @@ local function tuya_handler_direction_A(self, device, zb_rx)
     
     -- Option 2: Use contactSensor (Forward=Closed, Reverse=Open)
      if direction == 0 then
-        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
+        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
      else
-        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
+        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
      end
 end
 
 local function tuya_handler_direction_B(self, device, zb_rx)
     local direction = string.unpack(">I1", zb_rx.body.zcl_body.body_bytes, 7)
     if direction == 0 then
-        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
+        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
      else
-        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
+        device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
     end
 end
 
@@ -199,7 +199,7 @@ local function tuya_handler_energy_A(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
-  device.profile.components["main"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+  device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
   
 end
 local function tuya_handler_power_A(self, device, zb_rx)
@@ -209,7 +209,7 @@ local function tuya_handler_power_A(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< power-offset", power)
   end
-  device.profile.components["main"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+  device.profile.components["main2"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
 end
 
 local function tuya_handler_current_A(self, device, zb_rx)
@@ -220,7 +220,7 @@ local function tuya_handler_current_A(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< current-offset", current)
   end
-  device.profile.components["main"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
+  device.profile.components["main2"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
 end
 local function tuya_handler_energy_B(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
@@ -231,7 +231,7 @@ local function tuya_handler_energy_B(self, device, zb_rx)
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
  
-  device.profile.components["main2"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+  device.profile.components["main"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
 end
 local function tuya_handler_power_B(self, device, zb_rx)
  local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/10
@@ -240,7 +240,7 @@ local function tuya_handler_power_B(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< power-offset", power)
   end
-  device.profile.components["main2"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+  device.profile.components["main"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
 end
 
 local function tuya_handler_current_B(self, device, zb_rx)
@@ -251,7 +251,7 @@ local function tuya_handler_current_B(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< current-offset", current)
   end
-  device.profile.components["main2"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
+  device.profile.components["main"]:emit_event(capabilities.currentMeasurement.current({value = current, unit = "A" }))
 end
 local function tuya_handler_power_direction(self, device, zb_rx)
   -- DP 102 (0x66) GenericBody byte 7 is value current direction (0 or 1)
@@ -284,7 +284,7 @@ local function tuya_handler_voltage(self, device, zb_rx)
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< voltage-offset", voltage)
   end
-  device.profile.components["main"]:emit_event(capabilities.voltageMeasurement.voltage({value = voltage, unit = "V" }))
+  device.profile.components["main2"]:emit_event(capabilities.voltageMeasurement.voltage({value = voltage, unit = "V" }))
 end
 
 
@@ -379,7 +379,7 @@ end
 -- Reset energy values
 local function resetEnergyMeter_handler(driver, device, command)
   local _,last_reading = device:get_latest_state(command.component, capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME, 0, {value = 0, unit = "kWh"})
-  if command.component == "main" then
+  if command.component == "main2" then
     if last_reading.value ~= 0 then
       local offset = device:get_field("energy_offset_produced") or 0
       device:set_field("energy_offset_produced", last_reading.value+offset, {persist = true})

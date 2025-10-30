@@ -6,7 +6,7 @@ components:
   - id: powerMeter
     version: 1
 - id: main
-  label: Clamp A (Outbuilding)
+  label: Clamp B (Grid)
   capabilities:
   - id: contactSensor
     version: 1
@@ -25,7 +25,7 @@ components:
   categories:
   - name: CurbPowerMeter
 - id: main2
-  label: Clamp B (Grid)
+  label: Clamp A (Outbuilding)
   capabilities:
   - id: contactSensor
     version: 1
