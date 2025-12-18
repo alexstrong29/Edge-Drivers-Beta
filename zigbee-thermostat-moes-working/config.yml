@@ -8,9 +8,3 @@ profiles:
     manufacturer: "_TZE204_lpedvtvr"
     model: "TS0601"
     deviceProfileName: moes-thermostat
-fingerprints:
-  - id: "moes-star-ring-thermostat"
-    deviceLabel: "Moes Star Ring Thermostat"
-    manufacturer: "_TZE204_lpedvtvr"
-    model: "TS0601"
-    deviceProfileName: moes-thermostat

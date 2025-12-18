@@ -6,6 +6,11 @@ components:
         version: 1
       - id: thermostatHeatingSetpoint
         version: 1
+        config:
+          values:
+            - key: heatingSetpoint.value
+              range: [5, 35]
+              step: 0.5
       - id: temperatureMeasurement
         version: 1
       - id: battery
@@ -31,3 +36,76 @@ preferences:
         C: "Celsius (°C)"
         F: "Fahrenheit (°F)"
       default: "C"
+  - name: "displayBrightness"
+    title: "Display Brightness"
+    description: "Screen brightness level (1-100)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 1
+      maximum: 100
+      default: 50
+  - name: "childLock"
+    title: "Child Lock"
+    description: "Lock physical controls on thermostat"
+    required: false
+    preferenceType: boolean
+    definition:
+      default: false
+  - name: "sensorMode"
+    title: "Temperature Sensor"
+    description: "Which sensor to use for temperature reading"
+    required: false
+    preferenceType: enumeration
+    definition:
+      options:
+        "0": "Air Sensor"
+        "1": "Both Sensors"
+        "2": "Floor Sensor"
+      default: "0"
+  - name: "screenTime"
+    title: "Screen Timeout"
+    description: "How long the screen stays on"
+    required: false
+    preferenceType: enumeration
+    definition:
+      options:
+        "0": "Off"
+        "1": "Short"
+        "2": "Medium"
+        "3": "Long"
+      default: "2"
+  - name: "rgbBacklight"
+    title: "RGB Backlight"
+    description: "Enable RGB backlight"
+    required: false
+    preferenceType: boolean
+    definition:
+      default: true
+  - name: "tempCalibration"
+    title: "Temperature Calibration"
+    description: "Adjust temperature reading (-10 to +10°C)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: -10
+      maximum: 10
+      default: 0
+  - name: "deadzoneTemp"
+    title: "Deadzone Temperature"
+    description: "Temperature deadzone (0-5°C)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 5
+      default: 1
+  - name: "ecoTemp"
+    title: "Eco Mode Temperature"
+    description: "Target temperature in Eco mode (5-30°C)"
+    required: false
+    preferenceType: number
+    definition:
+      minimum: 5
+      maximum: 30
+      default: 18

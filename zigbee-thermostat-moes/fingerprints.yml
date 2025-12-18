@@ -1,16 +1,12 @@
-name: 'Moes Star Ring Thermostat'
-packageKey: 'moes-star-thermostat'
-permissions:
-  zigbee: {}
-profiles:
-  - id: "moes-thermostat"
-    deviceLabel: "Moes Star Ring Thermostat"
-    manufacturer: "_TZE204_lpedvtvr"
-    model: "TS0601"
-    deviceProfileName: moes-thermostat
-fingerprints:
+zigbeeManufacturer:
   - id: "moes-star-ring-thermostat"
     deviceLabel: "Moes Star Ring Thermostat"
     manufacturer: "_TZE204_lpedvtvr"
     model: "TS0601"
     deviceProfileName: moes-thermostat
+  - id: "moes-star-ring-thermostat-alt"
+    deviceLabel: "Moes Star Ring Thermostat"
+    manufacturer: "_TZE204_lpedvtvr"
+    model: "TS0601"
+    deviceProfileName: moes-thermostat
+    zigbeeModel: ["TS0601"]

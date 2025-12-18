@@ -1,4 +1,4 @@
-name: thermostat
+name: moes-thermostat
 components:
   - id: main
     capabilities:
