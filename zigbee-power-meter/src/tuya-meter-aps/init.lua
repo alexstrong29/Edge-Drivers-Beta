@@ -127,13 +127,21 @@ local do_configure = function(self, device)
 end
 local function tuya_handler_direction_A(self, device, zb_rx)
    local direction = string.unpack(">I1", zb_rx.body.zcl_body.body_bytes, 7)  -- Should be 1-byte: 0=Forward, 1=Reverse
-    
-    -- Option 2: Use contactSensor (Forward=Closed, Reverse=Open)
-     if direction == 0 then
-        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.closed())  -- Forward
-     else
-        device.profile.components["main2"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
-     end
+    -- Clamp A (outbuilding) only ever imports, so no contactSensor in the profile; just log the direction
+    if device.preferences.logDebugPrint == true then
+      print("<<<<<<<<<<<<<<< direction A", direction)
+    end
+end
+
+-- Summary shows Clamp B (grid) power signed by direction, sign set by the powerSign preference
+local function emit_grid_summary(device)
+  local power = device:get_field("power_B")
+  if power == nil then return end
+  local exporting = (device:get_field("direction_B") or 0) ~= 0
+  if power ~= 0 and (exporting == (device.preferences.powerSign ~= "1")) then
+    power = -power
+  end
+  device.profile.components["summary"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
 end
 
 local function tuya_handler_direction_B(self, device, zb_rx)
@@ -143,6 +151,8 @@ local function tuya_handler_direction_B(self, device, zb_rx)
      else
         device.profile.components["main"]:emit_event(capabilities.contactSensor.contact.open())  -- Reverse
     end
+    device:set_field("direction_B", direction)
+    emit_grid_summary(device)
 end
 
 local function tuya_handler_energy_fwd_A(self, device, zb_rx)
@@ -183,13 +193,14 @@ local function tuya_handler_energy_rev_B(self, device, zb_rx)
 end
 
 local function tuya_handler_power_total(self, device, zb_rx)
- local power = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)
+ -- DP 115: Total Power (A+B), signed, 0.1W
+ local power = string.unpack(">i4", zb_rx.body.zcl_body.body_bytes, 7)/10
   print("<<<<<<<<<<<<<<< tuya_handler_power", power)
 
   if device.preferences.logDebugPrint == true then
     print("<<<<<<<<<<<<<<< power-offset", power)
   end
-  device.profile.components["summary"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+  -- not emitted: the summary shows signed grid power instead (see emit_grid_summary)
 end
 local function tuya_handler_energy_A(self, device, zb_rx)
   -- DP  (0x01) Energy consumption byte 7, len 4 and divided by 100 for real value in kwh
@@ -241,6 +252,8 @@ local function tuya_handler_power_B(self, device, zb_rx)
     print("<<<<<<<<<<<<<<< power-offset", power)
   end
   device.profile.components["main"]:emit_event(capabilities.powerMeter.power({value = power, unit = "W" }))
+  device:set_field("power_B", power)
+  emit_grid_summary(device)
 end
 
 local function tuya_handler_current_B(self, device, zb_rx)
