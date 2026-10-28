@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "states": [
+      {
+        "label": "{{cost.unit}}{{cost.value}}"
+      }
+    ],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Cost",
+      "displayType": "state",
+      "state": {
+        "label": "{{cost.unit}}{{cost.value}}"
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Cost",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "cost.value",
+          "valueType": "number",
+          "unit": "cost.unit"
+        }
+      }
+    ],
+    "actions": []
+  }
+}

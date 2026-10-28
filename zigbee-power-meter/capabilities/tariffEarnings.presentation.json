@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "states": [
+      {
+        "label": "{{earnings.unit}}{{earnings.value}}"
+      }
+    ],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Earnings",
+      "displayType": "state",
+      "state": {
+        "label": "{{earnings.unit}}{{earnings.value}}"
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Earnings",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "earnings.value",
+          "valueType": "number",
+          "unit": "earnings.unit"
+        }
+      }
+    ],
+    "actions": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "Tariff Totals",
+  "attributes": {
+    "today": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    },
+    "yesterday": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    },
+    "thisMonth": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    },
+    "lastMonth": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    },
+    "thisYear": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    },
+    "lastYear": {
+      "schema": {
+        "type": "object",
+        "properties": { "value": { "type": "string", "maxLength": 64 } },
+        "additionalProperties": false,
+        "required": ["value"]
+      },
+      "enumCommands": []
+    }
+  },
+  "commands": {}
+}

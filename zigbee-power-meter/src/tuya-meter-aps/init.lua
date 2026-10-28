@@ -37,6 +37,7 @@ local data_types = require "st.zigbee.data_types"
 --local Messages = require "st.zigbee.messages"
 local generic_body = require "st.zigbee.generic_body"
 --local utils = require"st.utils"
+local tariff = require "tuya-meter-aps.tariff"
 
 local TUYA_CLUSTER = 0xEF00
 local DP_TYPE_RAW = "\x00"
@@ -155,6 +156,144 @@ local function tuya_handler_direction_B(self, device, zb_rx)
     emit_grid_summary(device)
 end
 
+-- Night / day grid import: kWh imported from the grid in the current (or last) night and day period.
+-- Each bucket resets to 0 when its period starts, so night shows last night's total during the day.
+-- Grid export uses one flat rate and its tile shows today's export, reset at local midnight.
+local TARIFF_KINDS = { "night", "day", "export" }
+local TARIFF_COMPONENTS = { night = "gridNight", day = "gridDay", export = "gridExport" }
+local TARIFF_RATE_PREFS = { night = "nightRate", day = "dayRate", export = "exportRate" } -- pence per kWh
+local tariffCost = capabilities["dreamspace09858.tariffCost"]
+local tariffEarnings = capabilities["dreamspace09858.tariffEarnings"]
+
+local function tariff_settings(device)
+  local start_min = tariff.parse_hhmm(device.preferences.nightStart) or 30  -- 00:30
+  local end_min = tariff.parse_hhmm(device.preferences.nightEnd) or 330     -- 05:30
+  return device.preferences.tariffTimeZone or "uk", start_min, end_min
+end
+
+-- Calendar totals per rate: "tariff_totals" = { day/month/year = { key = "2026-10-28",
+--   cur = { night = {kwh, pence}, day = {...}, export = {...} }, last = same as cur or nil } }
+-- Cost is added at the price in force when the energy is used, so a price change only affects later usage.
+local tariffTotals = capabilities["dreamspace09858.tariffTotals"]
+local TOTAL_ATTRIBUTES = {
+  {"day", "cur", "today"}, {"day", "last", "yesterday"},
+  {"month", "cur", "thisMonth"}, {"month", "last", "lastMonth"},
+  {"year", "cur", "thisYear"}, {"year", "last", "lastYear"},
+}
+
+local function empty_bucket() return { night = {0, 0}, day = {0, 0}, export = {0, 0} } end
+
+local function format_total(entry)
+  if entry == nil then return "-" end
+  return string.format("%.2f kWh  ·  £%.2f", entry[1], entry[2] / 100)
+end
+
+local function emit_tariff(device, kind)
+  local component = device.profile.components[TARIFF_COMPONENTS[kind]]
+  if component == nil then return end -- profile without the tariff components
+  local kwh = device:get_field("tariff_" .. kind .. "_kwh") or 0
+  local pence = device:get_field("tariff_" .. kind .. "_pence") or 0
+  component:emit_event(capabilities.energyMeter.energy({value = math.floor(kwh * 100 + 0.5) / 100, unit = "kWh" }))
+  local money = kind == "export" and tariffEarnings.earnings or tariffCost.cost
+  component:emit_event(money({value = math.floor(pence + 0.5) / 100, unit = "£" }))
+  local totals = device:get_field("tariff_totals") or {}
+  for _, a in ipairs(TOTAL_ATTRIBUTES) do
+    local scope = totals[a[1]]
+    component:emit_event(tariffTotals[a[3]]({value = format_total(scope and scope[a[2]] and scope[a[2]][kind])}))
+  end
+end
+
+local function emit_all_tariffs(device)
+  for _, kind in ipairs(TARIFF_KINDS) do emit_tariff(device, kind) end
+end
+
+-- Moves this day / month / year into "last" when the local calendar rolls over; true if anything changed
+local function roll_totals(totals, keys)
+  local changed = false
+  for scope, key in pairs(keys) do
+    local t = totals[scope]
+    if t == nil then
+      totals[scope] = { key = key, cur = empty_bucket() }
+      changed = true
+    elseif t.key ~= key then
+      print(string.format("<<< Tariff totals: %s %s finished, now %s", scope, t.key, key))
+      totals[scope] = { key = key, cur = empty_bucket(), last = t.cur }
+      changed = true
+    else
+      -- totals saved before a rate was added
+      for _, kind in ipairs(TARIFF_KINDS) do
+        if t.cur[kind] == nil then t.cur[kind] = {0, 0}; changed = true end
+      end
+    end
+  end
+  return changed
+end
+
+local function reset_tile(device, kind)
+  device:set_field("tariff_" .. kind .. "_kwh", 0, {persist = true})
+  device:set_field("tariff_" .. kind .. "_pence", 0, {persist = true})
+end
+
+-- Starts a new bucket when the period or calendar day changes; returns the current import period ("night" or "day")
+local function update_tariff_period(device)
+  local zone, start_min, end_min = tariff_settings(device)
+  local now = os.time()
+  local kind, id, mins = tariff.period(now, zone, start_min, end_min)
+  local keys = tariff.local_keys(now, zone)
+  local totals = device:get_field("tariff_totals") or {}
+  local rolled = roll_totals(totals, keys)
+  if rolled then device:set_field("tariff_totals", totals, {persist = true}) end
+  if device:get_field("tariff_period_id") ~= id then
+    print(string.format("<<< Tariff period now %s (local %02d:%02d, zone %s)", id, mins // 60, mins % 60, zone))
+    device:set_field("tariff_period_id", id, {persist = true})
+    reset_tile(device, kind)
+    emit_tariff(device, kind)
+  elseif device.preferences.logDebugPrint == true then
+    print(string.format("<<< Tariff period %s (local %02d:%02d, zone %s)", id, mins // 60, mins % 60, zone))
+  end
+  if device:get_field("tariff_export_period_id") ~= keys.day then
+    device:set_field("tariff_export_period_id", keys.day, {persist = true})
+    reset_tile(device, "export")
+    emit_tariff(device, "export")
+  end
+  if rolled then emit_all_tariffs(device) end
+  return kind
+end
+
+-- direction: "import" (Clamp B forward energy) or "export" (Clamp B reverse energy);
+-- counter: that energy counter in kWh, only ever increases
+local function add_grid_energy(device, direction, counter)
+  local kind = update_tariff_period(device)
+  if direction == "export" then kind = "export" end
+  local last_key = "tariff_last_" .. direction
+  local last = device:get_field(last_key)
+  if last ~= nil and counter >= last then
+    local kwh = counter - last
+    local pence = kwh * (tonumber(device.preferences[TARIFF_RATE_PREFS[kind]]) or 0)
+    local prefix = "tariff_" .. kind
+    device:set_field(prefix .. "_kwh", (device:get_field(prefix .. "_kwh") or 0) + kwh, {persist = true})
+    device:set_field(prefix .. "_pence", (device:get_field(prefix .. "_pence") or 0) + pence, {persist = true})
+    local totals = device:get_field("tariff_totals")
+    for _, scope in ipairs({"day", "month", "year"}) do
+      local entry = totals[scope].cur[kind]
+      entry[1], entry[2] = entry[1] + kwh, entry[2] + pence
+    end
+    device:set_field("tariff_totals", totals, {persist = true})
+  end
+  -- first reading, or the counter went backwards (meter reset): just resync
+  device:set_field(last_key, counter, {persist = true})
+  emit_tariff(device, kind)
+end
+
+local function start_tariff_timer(device)
+  local timer = device:get_field("tariff_timer")
+  if timer then device.thread:cancel_timer(timer) end
+  update_tariff_period(device)
+  emit_all_tariffs(device)
+  -- check every minute so buckets reset on time even if no energy report arrives
+  device:set_field("tariff_timer", device.thread:call_on_schedule(60, function() update_tariff_period(device) end, "tariff_timer"))
+end
+
 local function tuya_handler_energy_fwd_A(self, device, zb_rx)
  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
   print("<<<<<<<<<<<<<<< tuya_handler_energy", energy)
@@ -181,6 +320,7 @@ local function tuya_handler_energy_rev_A(self, device, zb_rx)
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
   device.profile.components["main5"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+  add_grid_energy(device, "import", energy)
 end
 local function tuya_handler_energy_rev_B(self, device, zb_rx)
  local energy = string.unpack(">I4", zb_rx.body.zcl_body.body_bytes, 7)/100
@@ -190,6 +330,7 @@ local function tuya_handler_energy_rev_B(self, device, zb_rx)
     print("<<<<<<<<<<<<<<< energy-offset", energy)
   end
   device.profile.components["main6"]:emit_event(capabilities.energyMeter.energy({value = energy, unit = "kWh" }))
+  add_grid_energy(device, "export", energy)
 end
 
 local function tuya_handler_power_total(self, device, zb_rx)
@@ -392,6 +533,13 @@ end
 -- Reset energy values
 local function resetEnergyMeter_handler(driver, device, command)
   local _,last_reading = device:get_latest_state(command.component, capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME, 0, {value = 0, unit = "kWh"})
+  for kind, component in pairs(TARIFF_COMPONENTS) do
+    if command.component == component then
+      reset_tile(device, kind)
+      emit_tariff(device, kind)
+      return
+    end
+  end
   if command.component == "main2" then
     if last_reading.value ~= 0 then
       local offset = device:get_field("energy_offset_produced") or 0
@@ -414,6 +562,16 @@ local function do_driverSwitched(self, device) --23/12/23
    end, "configure") 
  end
 
+local function device_init(self, device)
+  start_tariff_timer(device)
+end
+
+-- night start/end, time zone or prices may have changed
+local function info_changed(self, device, event, args)
+  update_tariff_period(device)
+  emit_all_tariffs(device)
+end
+
 local tuya_meter = {
   NAME = "Tuya meter bidirectional",
   capability_handlers = {
@@ -433,6 +591,8 @@ local tuya_meter = {
     }
   },
   lifecycle_handlers = {
+    init = device_init,
+    infoChanged = info_changed,
     added = device_added,
     driverSwitched = do_driverSwitched,
     doConfigure = do_configure

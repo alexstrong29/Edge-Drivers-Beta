@@ -5,6 +5,39 @@ components:
   capabilities:
   - id: powerMeter
     version: 1
+- id: gridNight
+  label: Grid Import Night Rate
+  capabilities:
+  - id: energyMeter
+    version: 1
+  - id: dreamspace09858.tariffCost
+    version: 1
+  - id: dreamspace09858.tariffTotals
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: gridDay
+  label: Grid Import Day Rate
+  capabilities:
+  - id: energyMeter
+    version: 1
+  - id: dreamspace09858.tariffCost
+    version: 1
+  - id: dreamspace09858.tariffTotals
+    version: 1
+  categories:
+  - name: CurbPowerMeter
+- id: gridExport
+  label: Grid Export
+  capabilities:
+  - id: energyMeter
+    version: 1
+  - id: dreamspace09858.tariffEarnings
+    version: 1
+  - id: dreamspace09858.tariffTotals
+    version: 1
+  categories:
+  - name: CurbPowerMeter
 - id: main
   label: Clamp B (Grid)
   capabilities:
@@ -89,6 +122,59 @@ preferences:
         "0": "Export->Negative & Import->Positive"
         "1": "Export->Positive & Import->Negative"
       default: "0"
+  - name: "nightStart"
+    title: "Night rate start time"
+    description: "Start of the night tariff, 24h HH:MM. Grid import from then until the end time counts as Night Rate, the rest as Day Rate. Default = 00:30"
+    required: false
+    preferenceType: string
+    definition:
+      stringType: text
+      default: "00:30"
+  - name: "nightEnd"
+    title: "Night rate end time"
+    description: "End of the night tariff, 24h HH:MM. Default = 05:30"
+    required: false
+    preferenceType: string
+    definition:
+      stringType: text
+      default: "05:30"
+  - name: "nightRate"
+    title: "Night rate price (p/kWh)"
+    description: "Price per kWh imported during the night rate, in pence. Used for the Night Rate cost"
+    required: false
+    preferenceType: number
+    definition:
+      minimum: 0
+      maximum: 200
+      default: 0
+  - name: "dayRate"
+    title: "Day rate price (p/kWh)"
+    description: "Price per kWh imported outside the night rate, in pence. Used for the Day Rate cost"
+    required: false
+    preferenceType: number
+    definition:
+      minimum: 0
+      maximum: 200
+      default: 0
+  - name: "exportRate"
+    title: "Export price (p/kWh)"
+    description: "Flat price paid per kWh exported to the grid, in pence. Used for the Grid Export earnings"
+    required: false
+    preferenceType: number
+    definition:
+      minimum: 0
+      maximum: 200
+      default: 0
+  - name: "tariffTimeZone"
+    title: "Tariff time zone"
+    description: "UK follows the clocks (GMT in winter, BST in summer). Pick UTC/GMT all year if your meter keeps the night rate on GMT and doesn't change in summer"
+    required: false
+    preferenceType: enumeration
+    definition:
+      options:
+        "uk": "UK time (GMT/BST automatic)"
+        "utc": "UTC/GMT all year"
+      default: "uk"
   - name: "logDebugPrint"
     title: "Show Logs Debug Prints in CLI"
     required: false
