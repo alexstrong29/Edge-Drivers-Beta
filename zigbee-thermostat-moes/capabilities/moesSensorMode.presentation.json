@@ -1,0 +1,110 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Temperature sensor",
+      "displayType": "list",
+      "list": {
+        "command": {
+          "name": "setSensorMode",
+          "alternatives": [
+            {
+              "key": "air",
+              "value": "Air sensor",
+              "type": "active"
+            },
+            {
+              "key": "both",
+              "value": "Both sensors",
+              "type": "active"
+            },
+            {
+              "key": "floor",
+              "value": "Floor sensor",
+              "type": "active"
+            }
+          ]
+        },
+        "state": {
+          "value": "sensorMode.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "air",
+              "value": "Air sensor",
+              "type": "active"
+            },
+            {
+              "key": "both",
+              "value": "Both sensors",
+              "type": "active"
+            },
+            {
+              "key": "floor",
+              "value": "Floor sensor",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Temperature sensor",
+        "displayType": "list",
+        "list": {
+          "value": "sensorMode.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "air",
+              "value": "Air sensor",
+              "type": "active"
+            },
+            {
+              "key": "both",
+              "value": "Both sensors",
+              "type": "active"
+            },
+            {
+              "key": "floor",
+              "value": "Floor sensor",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Temperature sensor",
+        "displayType": "list",
+        "list": {
+          "command": "setSensorMode",
+          "alternatives": [
+            {
+              "key": "air",
+              "value": "Air sensor",
+              "type": "active"
+            },
+            {
+              "key": "both",
+              "value": "Both sensors",
+              "type": "active"
+            },
+            {
+              "key": "floor",
+              "value": "Floor sensor",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

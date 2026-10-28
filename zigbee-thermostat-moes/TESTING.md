@@ -60,7 +60,6 @@ Once created, you can:
    - See the device with temperature display
    - Adjust the heating setpoint
    - Change modes (Off/Heat/Auto)
-   - View battery level
 
 2. **Test Commands via CLI:**
    ```bash

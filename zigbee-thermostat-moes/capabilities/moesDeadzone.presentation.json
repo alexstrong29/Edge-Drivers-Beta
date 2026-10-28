@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Deadzone temperature",
+      "displayType": "slider",
+      "slider": {
+        "value": "deadzone.value",
+        "valueType": "number",
+        "unit": "deadzone.unit",
+        "command": "setDeadzone",
+        "argumentType": "number",
+        "range": [
+          1,
+          5
+        ],
+        "step": 1
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Deadzone temperature",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "deadzone.value",
+          "valueType": "number",
+          "unit": "deadzone.unit",
+          "range": [
+            1,
+            5
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Deadzone temperature",
+        "displayType": "numberField",
+        "numberField": {
+          "command": "setDeadzone",
+          "argumentType": "number",
+          "unit": "deadzone.unit",
+          "range": [
+            1,
+            5
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -15,12 +15,17 @@ local generic_body = require "st.zigbee.generic_body"
 local ThermostatMode = capabilities.thermostatMode
 local ThermostatHeatingSetpoint = capabilities.thermostatHeatingSetpoint
 local TemperatureMeasurement = capabilities.temperatureMeasurement
-local Battery = capabilities.battery
 
 -- Tuya cluster constants
 local TUYA_CLUSTER = 0xEF00
 local TUYA_SET_DATA = 0x00
 local TUYA_REPORT_DATA = 0x01
+local TUYA_DATA_QUERY = 0x03
+
+-- Tuya DP data types
+local TYPE_BOOL = 0x01
+local TYPE_VALUE = 0x02
+local TYPE_ENUM = 0x04
 
 -- Tuya DP (Data Point) constants
 local DP_SYSTEM_MODE = 0x01
@@ -42,12 +47,13 @@ local DP_MIN_TEMP_LIMIT = 0x70
 local DP_ECO_TEMP = 0x71
 local DP_SCREEN_TIME = 0x72
 local DP_RGB_BACKLIGHT = 0x73
-local DP_BATTERY = 0x23
 
 local PRESET_MANUAL = 0
 local PRESET_TEMP_MANUAL = 1
 local PRESET_PROGRAM = 2
 local PRESET_ECO = 3
+
+local SUPPORTED_MODES = {"off", "heat", "auto", "eco"}
 
 local SENSOR_AIR = 0
 local SENSOR_BOTH = 1
@@ -57,6 +63,34 @@ local SCREEN_OFF = 0
 local SCREEN_SHORT = 1
 local SCREEN_MEDIUM = 2
 local SCREEN_LONG = 3
+
+-- Device settings, each exposed as a custom capability so the app shows the value the
+-- thermostat reports. kind: "value" (signed 4-byte int / scale), "bool" or "enum".
+local CAP_NAMESPACE = "dreamspace09858."
+local SETTINGS = {
+  { dp = DP_TEMP_CALIBRATION, cap = "moesTempCalibration", attr = "calibration", cmd = "setCalibration",
+    kind = "value", scale = 1, unit = "C" },
+  { dp = DP_DEADZONE_TEMP, cap = "moesDeadzone", attr = "deadzone", cmd = "setDeadzone",
+    kind = "value", scale = 1, unit = "C" },
+  { dp = DP_ECO_TEMP, cap = "moesEcoTemperature", attr = "ecoTemperature", cmd = "setEcoTemperature",
+    kind = "value", scale = 10, unit = "C" },
+  { dp = DP_DISPLAY_BRIGHTNESS, cap = "moesDisplayBrightness", attr = "brightness", cmd = "setBrightness",
+    kind = "value", scale = 1, unit = "%" },
+  { dp = DP_CHILD_LOCK, cap = "moesChildLock", attr = "childLock", cmd = "setChildLock",
+    kind = "bool", values = { [1] = "locked", [0] = "unlocked" } },
+  { dp = DP_SENSOR_MODE, cap = "moesSensorMode", attr = "sensorMode", cmd = "setSensorMode",
+    kind = "enum", values = { [SENSOR_AIR] = "air", [SENSOR_BOTH] = "both", [SENSOR_FLOOR] = "floor" } },
+  { dp = DP_SCREEN_TIME, cap = "moesScreenTimeout", attr = "screenTimeout", cmd = "setScreenTimeout",
+    kind = "enum", values = { [SCREEN_OFF] = "off", [SCREEN_SHORT] = "short", [SCREEN_MEDIUM] = "medium", [SCREEN_LONG] = "long" } },
+  { dp = DP_RGB_BACKLIGHT, cap = "moesBacklight", attr = "backlight", cmd = "setBacklight",
+    kind = "bool", values = { [1] = "on", [0] = "off" } },
+}
+
+local SETTINGS_BY_DP = {}
+for _, setting in ipairs(SETTINGS) do
+  setting.capability = capabilities[CAP_NAMESPACE .. setting.cap]
+  SETTINGS_BY_DP[setting.dp] = setting
+end
 
 -- Helper functions
 local function create_tuya_command(dp, data_type, data)
@@ -119,6 +153,33 @@ local function send_tuya_command(device, dp, data_type, data)
   }))
 end
 
+-- Ask the thermostat to report every DP (including the settings)
+local function send_tuya_query(device)
+  device.log.info("Sending Tuya data query")
+
+  local addrh = messages.AddressHeader(
+    zb_const.HUB.ADDR,
+    zb_const.HUB.ENDPOINT,
+    device:get_short_address(),
+    device:get_endpoint(TUYA_CLUSTER),
+    zb_const.HA_PROFILE_ID,
+    TUYA_CLUSTER
+  )
+
+  local zclh = zcl_messages.ZclHeader({
+    cmd = data_types.ZCLCommandId(TUYA_DATA_QUERY)
+  })
+  zclh.frame_ctrl:set_cluster_specific()
+
+  device:send(messages.ZigbeeMessageTx({
+    address_header = addrh,
+    body = zcl_messages.ZclMessageBody({
+      zcl_header = zclh,
+      zcl_body = generic_body.GenericBody("")
+    })
+  }))
+end
+
 -- Capability handlers
 local function handle_thermostat_mode(driver, device, command)
   local mode = command.args.mode
@@ -133,6 +194,9 @@ local function handle_thermostat_mode(driver, device, command)
   elseif mode == "auto" then
     send_tuya_command(device, DP_SYSTEM_MODE, 0x01, string.char(1))
     send_tuya_command(device, DP_PRESET_MODE, 0x04, string.char(PRESET_PROGRAM))
+  elseif mode == "eco" then
+    send_tuya_command(device, DP_SYSTEM_MODE, 0x01, string.char(1))
+    send_tuya_command(device, DP_PRESET_MODE, 0x04, string.char(PRESET_ECO))
   else
     device.log.warn("Unsupported mode: " .. mode)
     return
@@ -151,6 +215,45 @@ local function handle_heating_setpoint(driver, device, command)
                string.char(setpoint_value & 0xFF)
   
   send_tuya_command(device, DP_SETPOINT, 0x02, data)
+end
+
+-- Settings: app value -> device
+local function handle_setting(setting, device, value)
+  device.log.info(string.format("Setting %s to %s", setting.attr, tostring(value)))
+
+  if setting.kind == "value" then
+    local raw = math.floor(value * setting.scale + 0.5)
+    send_tuya_command(device, setting.dp, TYPE_VALUE, string.pack(">i4", raw))
+  else
+    for raw, name in pairs(setting.values) do
+      if name == value then
+        send_tuya_command(device, setting.dp, setting.kind == "bool" and TYPE_BOOL or TYPE_ENUM, string.char(raw))
+        return
+      end
+    end
+    device.log.warn(string.format("Unknown %s value: %s", setting.attr, tostring(value)))
+  end
+end
+
+-- Settings: device report -> app
+local function emit_setting(setting, device, dp_data)
+  local cap_attr = setting.capability[setting.attr]
+
+  if setting.kind == "value" then
+    if #dp_data < 4 then return end
+    local raw = string.unpack(">i4", dp_data)
+    local value = raw / setting.scale
+    device.log.info(string.format("%s: %s%s (raw: %d)", setting.attr, tostring(value), setting.unit, raw))
+    device:emit_event(cap_attr({ value = value, unit = setting.unit }))
+  else
+    local raw = dp_data:byte(1)
+    if setting.kind == "bool" then raw = raw ~= 0 and 1 or 0 end
+    local name = setting.values[raw]
+    device.log.info(string.format("%s: %s (raw: %d)", setting.attr, tostring(name), dp_data:byte(1)))
+    if name then
+      device:emit_event(cap_attr({ value = name }))
+    end
+  end
 end
 
 -- Tuya cluster handler
@@ -182,7 +285,6 @@ local function tuya_handler(driver, device, zb_rx)
     local temp_c = temp_raw / 10
     device.log.info(string.format("DP16 Current temperature: %.1f°C (raw: %d)", temp_c, temp_raw))
     device:emit_event(TemperatureMeasurement.temperature({value = temp_c, unit = "C"}))
-    device:emit_event(Battery.battery(math.min(100, math.max(0, temp_raw % 101))))
     
   elseif dp == DP_SETPOINT then
     local setpoint_raw = (dp_data:byte(1) << 24) | (dp_data:byte(2) << 16) | 
@@ -206,18 +308,17 @@ local function tuya_handler(driver, device, zb_rx)
     elseif preset == PRESET_PROGRAM then
       device:emit_event(ThermostatMode.thermostatMode("auto"))
     elseif preset == PRESET_ECO then
-      device:emit_event(ThermostatMode.thermostatMode("heat"))
+      device:emit_event(ThermostatMode.thermostatMode("eco"))
     end
     
   elseif dp == DP_VALVE_STATE then
     local heating = dp_data:byte(1) == 0  -- Inverted: 0=heating, 1=idle
     device.log.info(string.format("Heating state: %s (raw: %d)", heating and "heating" or "idle", dp_data:byte(1)))
     device:set_field("heating_state", heating, {persist = true})
-    
-  elseif dp == DP_BATTERY then
-    local battery_level = dp_data:byte(1)
-    device.log.info(string.format("Battery: %d%%", battery_level))
-    
+
+  elseif SETTINGS_BY_DP[dp] then
+    emit_setting(SETTINGS_BY_DP[dp], device, dp_data)
+
   else
     device.log.debug(string.format("Unhandled DP: %d (type: %d, len: %d)", dp, data_type, data_len))
   end
@@ -226,14 +327,16 @@ end
 -- Device lifecycle handlers
 local function device_init(driver, device)
   device:set_field("tuya_initialized", false)
+  device:emit_event(ThermostatMode.supportedThermostatModes(SUPPORTED_MODES))
+  -- Read back all settings after a driver update or hub restart
+  device.thread:call_with_delay(5, function() send_tuya_query(device) end)
 end
 
 local function device_added(driver, device)
   device:emit_event(ThermostatMode.thermostatMode("heat"))
   device:emit_event(ThermostatHeatingSetpoint.heatingSetpoint({value = 20, unit = "C"}))
   device:emit_event(TemperatureMeasurement.temperature({value = 20, unit = "C"}))
-  device:emit_event(Battery.battery(100))
-  device:emit_event(ThermostatMode.supportedThermostatModes({"off", "heat", "auto"}))
+  device:emit_event(ThermostatMode.supportedThermostatModes(SUPPORTED_MODES))
   device:emit_event(capabilities.thermostatHeatingSetpoint.heatingSetpointRange({value = {minimum = 5, maximum = 35}, unit = "C"}))
   
   device.thread:call_on_schedule(300, function()
@@ -253,7 +356,7 @@ end
 
 local function do_refresh(driver, device, command)
   device.log.info("Refreshing thermostat state")
-  send_tuya_command(device, 0, 0, "")
+  send_tuya_query(device)
 end
 
 -- Driver configuration
@@ -262,7 +365,6 @@ local moes_thermostat_driver = {
     capabilities.thermostatMode,
     capabilities.thermostatHeatingSetpoint,
     capabilities.temperatureMeasurement,
-    capabilities.battery,
     capabilities.refresh
   },
   
@@ -296,6 +398,14 @@ local moes_thermostat_driver = {
   
   sub_drivers = {}
 }
+
+for _, setting in ipairs(SETTINGS) do
+  moes_thermostat_driver.capability_handlers[setting.capability.ID] = {
+    [setting.cmd] = function(driver, device, command)
+      handle_setting(setting, device, command.args.value)
+    end
+  }
+end
 
 defaults.register_for_default_handlers(moes_thermostat_driver, moes_thermostat_driver.supported_capabilities)
 local driver = ZigbeeDriver("moes-thermostat", moes_thermostat_driver)

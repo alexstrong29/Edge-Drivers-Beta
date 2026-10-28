@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Display brightness",
+      "displayType": "slider",
+      "slider": {
+        "value": "brightness.value",
+        "valueType": "number",
+        "unit": "brightness.unit",
+        "command": "setBrightness",
+        "argumentType": "number",
+        "range": [
+          0,
+          100
+        ],
+        "step": 1
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Display brightness",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "brightness.value",
+          "valueType": "number",
+          "unit": "brightness.unit",
+          "range": [
+            0,
+            100
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Display brightness",
+        "displayType": "numberField",
+        "numberField": {
+          "command": "setBrightness",
+          "argumentType": "number",
+          "unit": "brightness.unit",
+          "range": [
+            0,
+            100
+          ]
+        }
+      }
+    ]
+  }
+}

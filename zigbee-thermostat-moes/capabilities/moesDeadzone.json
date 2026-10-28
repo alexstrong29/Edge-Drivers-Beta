@@ -1,0 +1,46 @@
+{
+  "name": "Moes Deadzone",
+  "attributes": {
+    "deadzone": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "C"
+            ],
+            "default": "C"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setDeadzone",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setDeadzone": {
+      "name": "setDeadzone",
+      "arguments": [
+        {
+          "name": "value",
+          "optional": false,
+          "schema": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          }
+        }
+      ]
+    }
+  }
+}

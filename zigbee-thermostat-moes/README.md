@@ -4,14 +4,13 @@ SmartThings Edge driver for the Moes Star Ring Smart Knob Thermostat - a wall-mo
 
 ## About This Device
 
-The Moes Star Ring is a battery-powered wall thermostat with a rotating dial interface. It controls your heating system via relay output and provides an intuitive knob-based temperature control experience.
+The Moes Star Ring is a mains-powered (hard-wired) wall thermostat with a rotating dial interface. It controls your heating system via relay output and provides an intuitive knob-based temperature control experience.
 
 ## Features
 
 - Temperature measurement and display
 - Heating setpoint control
 - Multiple thermostat modes (Off, Heat, Auto)
-- Battery level monitoring
 - Standard SmartThings thermostat interface
 
 ## Installation
@@ -64,25 +63,44 @@ The Moes Star Ring is a battery-powered wall thermostat with a rotating dial int
 - **Off**: Thermostat is disabled
 - **Heat**: Manual heating mode - maintains set temperature
 - **Auto**: Automatic scheduling mode (if configured in thermostat)
+- **Eco**: Uses the Eco mode temperature setting instead of the normal setpoint
 
 ## Device Capabilities
 
 - **Temperature**: Current room temperature
 - **Heating Setpoint**: Target temperature (adjustable in 0.5°C increments)
 - **Thermostat Mode**: Current operating mode
-- **Battery**: Battery level percentage
 - **Refresh**: Manually request current state from device
+
+### Thermostat settings
+
+These are controls on the device page (not the Settings page), and each shows the value the
+thermostat reports. They use custom capabilities in the `dreamspace09858` namespace, defined in
+`capabilities/`.
+
+| Control | Range | DP |
+|---|---|---|
+| Eco mode temperature | 5–30°C | 0x71 |
+| Temperature calibration | −9 to +9°C | 0x65 |
+| Deadzone temperature | 1–5°C | 0x6E |
+| Temperature sensor | Air / Both / Floor | 0x20 |
+| Child lock | Locked / Unlocked | 0x27 |
+| Display brightness | 0–100% | 0x30 |
+| Screen timeout | Off / Short / Medium / Long | 0x72 |
+| RGB backlight | On / Off | 0x73 |
+
+To recreate a capability in another account, run `smartthings capabilities:create -n <namespace> -i capabilities/<name>.json`,
+then `smartthings capabilities:presentation:create <namespace>.<name> 1 -i capabilities/<name>.presentation.json`.
 
 ## Troubleshooting
 
 ### Device not pairing
 - Ensure the thermostat is in pairing mode (both buttons held for 5 seconds)
 - Move the thermostat closer to the hub during pairing
-- Try removing and re-installing the batteries
+- Try power-cycling the thermostat at the breaker
 
 ### Temperature not updating
 - Use the Refresh capability to manually request an update
-- Check battery level - low battery can affect communication
 - Ensure the device is within Zigbee range
 
 ### Setpoint changes not applying
@@ -93,7 +111,7 @@ The Moes Star Ring is a battery-powered wall thermostat with a rotating dial int
 ## Technical Details
 
 **Device Type:** Wall-mounted smart dial thermostat
-**Power:** Battery powered (typically 2x AA)
+**Power:** Mains powered (hard-wired)
 **Control:** Relay output for heating system
 
 **Zigbee Information:**
@@ -102,24 +120,15 @@ The Moes Star Ring is a battery-powered wall thermostat with a rotating dial int
 - Cluster: Tuya Private Cluster (0xEF00)
 
 **Data Points:**
-- DP 0x04: Operating mode
-- DP 0x10: Heating setpoint
-- DP 0x18: Current temperature
-- DP 0x23: Battery level
-- DP 0x28: Child lock
-- DP 0x68: Window detection
-- DP 0x6C: Heating relay state
+- DP 0x01: On/off
+- DP 0x02: Preset (manual / temporary manual / program / eco; eco maps to the Eco mode)
+- DP 0x10: Current temperature (0.1°C)
+- DP 0x2F: Heating relay state (0 = heating)
+- DP 0x32: Heating setpoint (0.1°C)
+- Settings DPs: see the table above
 
-## Customization
-
-The driver can be modified to add additional features:
-- Window detection alerts
-- Child lock control
-- Heating relay state display
-- Advanced scheduling
-- Temperature offset calibration
-
-Edit the `src/init.lua` file to add additional data point handlers.
+Edit `src/init.lua` to add additional data point handlers. New settings only need an entry in the
+`SETTINGS` table plus a matching custom capability.
 
 ## Support
 

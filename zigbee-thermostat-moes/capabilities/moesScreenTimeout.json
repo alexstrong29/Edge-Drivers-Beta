@@ -1,0 +1,47 @@
+{
+  "name": "Moes Screen Timeout",
+  "attributes": {
+    "screenTimeout": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "off",
+              "short",
+              "medium",
+              "long"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setScreenTimeout",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setScreenTimeout": {
+      "name": "setScreenTimeout",
+      "arguments": [
+        {
+          "name": "value",
+          "optional": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "off",
+              "short",
+              "medium",
+              "long"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

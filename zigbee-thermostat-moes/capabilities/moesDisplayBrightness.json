@@ -1,0 +1,46 @@
+{
+  "name": "Moes Display Brightness",
+  "attributes": {
+    "brightness": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "%"
+            ],
+            "default": "%"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setBrightness",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setBrightness": {
+      "name": "setBrightness",
+      "arguments": [
+        {
+          "name": "value",
+          "optional": false,
+          "schema": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      ]
+    }
+  }
+}

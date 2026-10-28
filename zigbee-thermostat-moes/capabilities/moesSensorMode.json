@@ -1,0 +1,45 @@
+{
+  "name": "Moes Sensor Mode",
+  "attributes": {
+    "sensorMode": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "air",
+              "both",
+              "floor"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setSensorMode",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setSensorMode": {
+      "name": "setSensorMode",
+      "arguments": [
+        {
+          "name": "value",
+          "optional": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "air",
+              "both",
+              "floor"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

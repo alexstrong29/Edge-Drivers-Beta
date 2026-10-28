@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Temperature calibration",
+      "displayType": "slider",
+      "slider": {
+        "value": "calibration.value",
+        "valueType": "number",
+        "unit": "calibration.unit",
+        "command": "setCalibration",
+        "argumentType": "number",
+        "range": [
+          -9,
+          9
+        ],
+        "step": 1
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Temperature calibration",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "calibration.value",
+          "valueType": "number",
+          "unit": "calibration.unit",
+          "range": [
+            -9,
+            9
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Temperature calibration",
+        "displayType": "numberField",
+        "numberField": {
+          "command": "setCalibration",
+          "argumentType": "number",
+          "unit": "calibration.unit",
+          "range": [
+            -9,
+            9
+          ]
+        }
+      }
+    ]
+  }
+}

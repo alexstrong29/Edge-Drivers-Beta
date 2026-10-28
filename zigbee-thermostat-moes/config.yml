@@ -1,5 +1,7 @@
 name: 'Moes Star Ring Thermostat'
 packageKey: 'moes-star-thermostat'
+description: 'Moes Star Ring Zigbee smart thermostat for water boiler and electric heating (_TZE204_lpedvtvr / TS0601). Product page: https://moeshouse.com/products/zigbee-star-ring-smart-thermostat-temperature-controller-water-boiler-electric-heating'
+vendorSupportInformation: '<a href="https://moeshouse.com/products/zigbee-star-ring-smart-thermostat-temperature-controller-water-boiler-electric-heating">Moes Star Ring thermostat product page</a>'
 permissions:
   zigbee: {}
 profiles:

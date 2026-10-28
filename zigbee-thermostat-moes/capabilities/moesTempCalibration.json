@@ -1,0 +1,46 @@
+{
+  "name": "Moes Temp Calibration",
+  "attributes": {
+    "calibration": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": -9,
+            "maximum": 9
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "C"
+            ],
+            "default": "C"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setCalibration",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setCalibration": {
+      "name": "setCalibration",
+      "arguments": [
+        {
+          "name": "value",
+          "optional": false,
+          "schema": {
+            "type": "number",
+            "minimum": -9,
+            "maximum": 9
+          }
+        }
+      ]
+    }
+  }
+}

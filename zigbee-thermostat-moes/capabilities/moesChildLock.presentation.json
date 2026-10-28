@@ -1,0 +1,90 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Child lock",
+      "displayType": "list",
+      "list": {
+        "command": {
+          "name": "setChildLock",
+          "alternatives": [
+            {
+              "key": "locked",
+              "value": "Locked",
+              "type": "active"
+            },
+            {
+              "key": "unlocked",
+              "value": "Unlocked",
+              "type": "active"
+            }
+          ]
+        },
+        "state": {
+          "value": "childLock.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "locked",
+              "value": "Locked",
+              "type": "active"
+            },
+            {
+              "key": "unlocked",
+              "value": "Unlocked",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Child lock",
+        "displayType": "list",
+        "list": {
+          "value": "childLock.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "locked",
+              "value": "Locked",
+              "type": "active"
+            },
+            {
+              "key": "unlocked",
+              "value": "Unlocked",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Child lock",
+        "displayType": "list",
+        "list": {
+          "command": "setChildLock",
+          "alternatives": [
+            {
+              "key": "locked",
+              "value": "Locked",
+              "type": "active"
+            },
+            {
+              "key": "unlocked",
+              "value": "Unlocked",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

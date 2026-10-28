@@ -1,0 +1,90 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "RGB backlight",
+      "displayType": "list",
+      "list": {
+        "command": {
+          "name": "setBacklight",
+          "alternatives": [
+            {
+              "key": "on",
+              "value": "On",
+              "type": "active"
+            },
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            }
+          ]
+        },
+        "state": {
+          "value": "backlight.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "on",
+              "value": "On",
+              "type": "active"
+            },
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "RGB backlight",
+        "displayType": "list",
+        "list": {
+          "value": "backlight.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "on",
+              "value": "On",
+              "type": "active"
+            },
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "RGB backlight",
+        "displayType": "list",
+        "list": {
+          "command": "setBacklight",
+          "alternatives": [
+            {
+              "key": "on",
+              "value": "On",
+              "type": "active"
+            },
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

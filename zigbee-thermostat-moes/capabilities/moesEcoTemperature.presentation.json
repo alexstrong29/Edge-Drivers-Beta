@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Eco mode temperature",
+      "displayType": "slider",
+      "slider": {
+        "value": "ecoTemperature.value",
+        "valueType": "number",
+        "unit": "ecoTemperature.unit",
+        "command": "setEcoTemperature",
+        "argumentType": "number",
+        "range": [
+          5,
+          30
+        ],
+        "step": 0.5
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Eco mode temperature",
+        "displayType": "numberField",
+        "numberField": {
+          "value": "ecoTemperature.value",
+          "valueType": "number",
+          "unit": "ecoTemperature.unit",
+          "range": [
+            5,
+            30
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Eco mode temperature",
+        "displayType": "numberField",
+        "numberField": {
+          "command": "setEcoTemperature",
+          "argumentType": "number",
+          "unit": "ecoTemperature.unit",
+          "range": [
+            5,
+            30
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "Screen timeout",
+      "displayType": "list",
+      "list": {
+        "command": {
+          "name": "setScreenTimeout",
+          "alternatives": [
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            },
+            {
+              "key": "short",
+              "value": "Short",
+              "type": "active"
+            },
+            {
+              "key": "medium",
+              "value": "Medium",
+              "type": "active"
+            },
+            {
+              "key": "long",
+              "value": "Long",
+              "type": "active"
+            }
+          ]
+        },
+        "state": {
+          "value": "screenTimeout.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            },
+            {
+              "key": "short",
+              "value": "Short",
+              "type": "active"
+            },
+            {
+              "key": "medium",
+              "value": "Medium",
+              "type": "active"
+            },
+            {
+              "key": "long",
+              "value": "Long",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [
+      {
+        "label": "Screen timeout",
+        "displayType": "list",
+        "list": {
+          "value": "screenTimeout.value",
+          "valueType": "string",
+          "alternatives": [
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            },
+            {
+              "key": "short",
+              "value": "Short",
+              "type": "active"
+            },
+            {
+              "key": "medium",
+              "value": "Medium",
+              "type": "active"
+            },
+            {
+              "key": "long",
+              "value": "Long",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "label": "Screen timeout",
+        "displayType": "list",
+        "list": {
+          "command": "setScreenTimeout",
+          "alternatives": [
+            {
+              "key": "off",
+              "value": "Off",
+              "type": "active"
+            },
+            {
+              "key": "short",
+              "value": "Short",
+              "type": "active"
+            },
+            {
+              "key": "medium",
+              "value": "Medium",
+              "type": "active"
+            },
+            {
+              "key": "long",
+              "value": "Long",
+              "type": "active"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
