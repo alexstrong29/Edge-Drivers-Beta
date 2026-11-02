@@ -1,0 +1,18 @@
+{
+  "dashboard": {
+    "states": [],
+    "actions": []
+  },
+  "detailView": [
+    { "label": "Today", "displayType": "state", "state": { "label": "{{today.value}}" } },
+    { "label": "Yesterday", "displayType": "state", "state": { "label": "{{yesterday.value}}" } },
+    { "label": "This month", "displayType": "state", "state": { "label": "{{thisMonth.value}}" } },
+    { "label": "Last month", "displayType": "state", "state": { "label": "{{lastMonth.value}}" } },
+    { "label": "This year", "displayType": "state", "state": { "label": "{{thisYear.value}}" } },
+    { "label": "Last year", "displayType": "state", "state": { "label": "{{lastYear.value}}" } }
+  ],
+  "automation": {
+    "conditions": [],
+    "actions": []
+  }
+}

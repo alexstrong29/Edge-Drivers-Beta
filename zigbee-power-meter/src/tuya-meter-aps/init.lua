@@ -174,7 +174,9 @@ end
 -- Calendar totals per rate: "tariff_totals" = { day/month/year = { key = "2026-10-28",
 --   cur = { night = {kwh, pence}, day = {...}, export = {...} }, last = same as cur or nil } }
 -- Cost is added at the price in force when the energy is used, so a price change only affects later usage.
+-- kWh and £ totals are separate capabilities so each value is short enough for the app's grid
 local tariffTotals = capabilities["dreamspace09858.tariffTotals"]
+local tariffTotalsPounds = capabilities["dreamspace09858.tariffTotalsPounds"]
 local TOTAL_ATTRIBUTES = {
   {"day", "cur", "today"}, {"day", "last", "yesterday"},
   {"month", "cur", "thisMonth"}, {"month", "last", "lastMonth"},
@@ -183,9 +185,14 @@ local TOTAL_ATTRIBUTES = {
 
 local function empty_bucket() return { night = {0, 0}, day = {0, 0}, export = {0, 0} } end
 
-local function format_total(entry)
+local function format_kwh(entry)
   if entry == nil then return "-" end
-  return string.format("%.2f kWh  ·  £%.2f", entry[1], entry[2] / 100)
+  return string.format("%.2f kWh", entry[1])
+end
+
+local function format_pounds(entry)
+  if entry == nil then return "-" end
+  return string.format("£%.2f", entry[2] / 100)
 end
 
 local function emit_tariff(device, kind)
@@ -199,7 +206,9 @@ local function emit_tariff(device, kind)
   local totals = device:get_field("tariff_totals") or {}
   for _, a in ipairs(TOTAL_ATTRIBUTES) do
     local scope = totals[a[1]]
-    component:emit_event(tariffTotals[a[3]]({value = format_total(scope and scope[a[2]] and scope[a[2]][kind])}))
+    local entry = scope and scope[a[2]] and scope[a[2]][kind]
+    component:emit_event(tariffTotals[a[3]]({value = format_kwh(entry)}))
+    component:emit_event(tariffTotalsPounds[a[3]]({value = format_pounds(entry)}))
   end
 end
 

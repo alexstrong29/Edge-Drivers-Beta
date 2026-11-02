@@ -14,6 +14,8 @@ components:
     version: 1
   - id: dreamspace09858.tariffTotals
     version: 1
+  - id: dreamspace09858.tariffTotalsPounds
+    version: 1
   categories:
   - name: CurbPowerMeter
 - id: gridDay
@@ -25,6 +27,8 @@ components:
     version: 1
   - id: dreamspace09858.tariffTotals
     version: 1
+  - id: dreamspace09858.tariffTotalsPounds
+    version: 1
   categories:
   - name: CurbPowerMeter
 - id: gridExport
@@ -35,6 +39,8 @@ components:
   - id: dreamspace09858.tariffEarnings
     version: 1
   - id: dreamspace09858.tariffTotals
+    version: 1
+  - id: dreamspace09858.tariffTotalsPounds
     version: 1
   categories:
   - name: CurbPowerMeter
